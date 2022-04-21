@@ -48,9 +48,10 @@ async def my_background_task():
                     victim = death["Victim"]["Name"]
                     killer = death["Killer"]["Name"]
                     time = death["TimeStamp"]
+                    eventId = death["EventId"]
 
-                    msg = "{0} was killed by {1} at {2}!".format(
-                        victim, killer, formatTime(time))
+                    msg = "{0} was killed by {1} at {2}!\nhttps://albiononline.com/en/killboard/kill/{3}".format(
+                        victim, killer, formatTime(time), str(eventId))
                     await channel.send(msg)
         ##########################
         for killStorage in killStorages:
@@ -62,12 +63,13 @@ async def my_background_task():
                     victim = death["Victim"]["Name"]
                     killer = death["Killer"]["Name"]
                     time = death["TimeStamp"]
-                    msg = "{0} killed {1} at {2}!".format(
-                        killer, victim, formatTime(time))
+                    eventId = death["EventId"]
+                    msg = "{0} killed {1} at {2}!\nhttps://albiononline.com/en/killboard/kill/{3}".format(
+                        killer, victim, formatTime(time), str(eventId))
                     await channel.send(msg)
         ##########################
         await asyncio.sleep(20)  # task runs every 60 seconds
 
 client.loop.create_task(my_background_task())
 ###
-client.run('OTY0Njg4MDk1MDMzMzAzMDcx.YloRzA.ZSt6dJiNoQsqpWZzbqdKPF72IA8')
+client.run('OTY0Njg4MDk1MDMzMzAzMDcx.YloRzA.y2Ebc4Sce5SAMK08ec2j0xBUi9w')

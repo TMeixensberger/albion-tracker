@@ -19,6 +19,6 @@ class DeathApi():
             req = requests.get(url)
             if req.status_code == 200:
                 jsonData = req.json()
-            return True, jsonData
+                return True, jsonData
         else:
             return False, {}
