@@ -3,6 +3,7 @@ import discord
 import asyncio
 from playerDeathStorage import PlayerDeathStorage
 from playerKillStorage import PlayerKillStorage
+from pictureApi import LoadoutGenerator
 
 
 class MyClient(discord.Client):
@@ -53,6 +54,7 @@ async def my_background_task():
                     msg = "{0} was killed by {1} at {2}!\nhttps://albiononline.com/en/killboard/kill/{3}".format(
                         victim, killer, formatTime(time), str(eventId))
                     await channel.send(msg)
+                    await channel.send(file=discord.File('merge.png'))
         ##########################
         for killStorage in killStorages:
             killStorage.refresh()
@@ -67,9 +69,25 @@ async def my_background_task():
                     msg = "{0} killed {1} at {2}!\nhttps://albiononline.com/en/killboard/kill/{3}".format(
                         killer, victim, formatTime(time), str(eventId))
                     await channel.send(msg)
+
+                    killerEquip = death["Killer"]["Equipment"]
+                    weapon = killerEquip["MainHand"]
+                    offWeapon = killerEquip["OffHand"]
+                    head = killerEquip["Head"]
+                    armor = killerEquip["Armor"]
+                    shoes = killerEquip["Shoes"]
+                    bag = killerEquip["Bag"]
+                    cape = killerEquip["Cape"]
+                    mount = killerEquip["Mount"]
+                    potion = killerEquip["Potion"]
+                    food = killerEquip["Food"]
+                    o = LoadoutGenerator(
+                        bag, head, cape, armor, weapon, offWeapon, food, potion, shoes, mount)
+                    path = o.generate()
+                    await channel.send(file=discord.File(path))
         ##########################
         await asyncio.sleep(20)  # task runs every 60 seconds
 
 client.loop.create_task(my_background_task())
 ###
-client.run('OTY0Njg4MDk1MDMzMzAzMDcx.YloRzA.y2Ebc4Sce5SAMK08ec2j0xBUi9w')
+client.run('OTY0Njg4MDk1MDMzMzAzMDcx.YloRzA.2-nSbNpN-n8XWnCJrAzUoI2qTUw')
