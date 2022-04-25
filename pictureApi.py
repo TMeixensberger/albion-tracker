@@ -17,17 +17,18 @@ image_width = 4 * spacer + 3 * imageSize
 
 
 class LoadoutGenerator():
-    def __init__(self, bag, head, cape, armour, weapon, offWeapon, food, potion, boots, mount):
-        self.__bag = bag
-        self.__head = head
-        self.__cape = cape
-        self.__armour = armour
-        self.__weapon = weapon
-        self.__offWeapon = offWeapon
-        self.__food = food
-        self.__potion = potion
-        self.__boots = boots
-        self.__mount = mount
+    def __init__(self, player):
+        equip = player["Equipment"]
+        self.__bag = equip["Bag"]
+        self.__head = equip["Head"]
+        self.__cape = equip["Cape"]
+        self.__armour = equip["Armor"]
+        self.__weapon = equip["MainHand"]
+        self.__offWeapon = equip["OffHand"]
+        self.__food = equip["Food"]
+        self.__potion = equip["Potion"]
+        self.__boots = equip["Shoes"]
+        self.__mount = equip["Mount"]
         self.__picPaths = []
 
     def cleanupCache(self):

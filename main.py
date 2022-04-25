@@ -1,4 +1,3 @@
-from os import kill
 import discord
 import asyncio
 from playerDeathStorage import PlayerDeathStorage
@@ -44,17 +43,30 @@ async def my_background_task():
             deathStorage.refresh()
             if deathStorage.unpostedDeathsAvailable():
                 deathData = deathStorage.getUnpostedDeaths()
-                for deathId in deathData:
-                    death = deathData[deathId]["data"]
-                    victim = death["Victim"]["Name"]
-                    killer = death["Killer"]["Name"]
-                    time = death["TimeStamp"]
-                    eventId = death["EventId"]
+                death = deathData[deathId]["data"]
+                victim = death["Victim"]["Name"]
+                killer = death["Killer"]["Name"]
+                time = death["TimeStamp"]
+                eventId = death["EventId"]
 
-                    msg = "{0} was killed by {1} at {2}!\nhttps://albiononline.com/en/killboard/kill/{3}".format(
-                        victim, killer, formatTime(time), str(eventId))
-                    await channel.send(msg)
-                    await channel.send(file=discord.File('merge.png'))
+                msg = "{0} was killed by {1} at {2}!".format(victim, killer, formatTime(time))
+                await channel.send(msg)
+
+                msg = "Victims gear:"
+                await channel.send(msg)
+                victimLoadout = LoadoutGenerator(death["Victim"])
+                pathVictimLoadout = victimLoadout.generate()
+                await channel.send(file=discord.File(pathVictimLoadout))
+
+                msg = "Killers gear:"
+                await channel.send(msg)
+                killerLoadout = LoadoutGenerator(death["Killer"])
+                pathKillerLoadout = killerLoadout.generate()
+                await channel.send(file=discord.File(pathKillerLoadout))
+
+                msg = "For more details about the death visit\n{0}".format("https://albiononline.com/en/killboard/kill/{0}".format(str(eventId)))
+                await channel.send(msg)
+
         ##########################
         for killStorage in killStorages:
             killStorage.refresh()
@@ -66,28 +78,28 @@ async def my_background_task():
                     killer = death["Killer"]["Name"]
                     time = death["TimeStamp"]
                     eventId = death["EventId"]
-                    msg = "{0} killed {1} at {2}!\nhttps://albiononline.com/en/killboard/kill/{3}".format(
-                        killer, victim, formatTime(time), str(eventId))
+
+                    msg = "{0} killed {1} at {2}!".format(killer, victim, formatTime(time))
+                    await channel.send(msg)
+                    
+                    msg = "Killers gear:"
+                    await channel.send(msg)
+                    killerLoadout = LoadoutGenerator(death["Killer"])
+                    pathKillerLoadout = killerLoadout.generate()
+                    await channel.send(file=discord.File(pathKillerLoadout))
+
+                    msg = "Victims gear:"
+                    await channel.send(msg)
+                    victimLoadout = LoadoutGenerator(death["Victim"])
+                    pathVictimLoadout = victimLoadout.generate()
+                    await channel.send(file=discord.File(pathVictimLoadout))
+
+                    msg = "For more details about the kill visit\n{0}".format("https://albiononline.com/en/killboard/kill/{0}".format(str(eventId)))
                     await channel.send(msg)
 
-                    killerEquip = death["Killer"]["Equipment"]
-                    weapon = killerEquip["MainHand"]
-                    offWeapon = killerEquip["OffHand"]
-                    head = killerEquip["Head"]
-                    armor = killerEquip["Armor"]
-                    shoes = killerEquip["Shoes"]
-                    bag = killerEquip["Bag"]
-                    cape = killerEquip["Cape"]
-                    mount = killerEquip["Mount"]
-                    potion = killerEquip["Potion"]
-                    food = killerEquip["Food"]
-                    o = LoadoutGenerator(
-                        bag, head, cape, armor, weapon, offWeapon, food, potion, shoes, mount)
-                    path = o.generate()
-                    await channel.send(file=discord.File(path))
         ##########################
         await asyncio.sleep(20)  # task runs every 60 seconds
 
 client.loop.create_task(my_background_task())
 ###
-client.run('OTY0Njg4MDk1MDMzMzAzMDcx.YloRzA.2-nSbNpN-n8XWnCJrAzUoI2qTUw')
+client.run('token here')
