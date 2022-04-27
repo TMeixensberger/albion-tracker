@@ -28,7 +28,7 @@ def formatTime(timestamp):
     return date + " " + time
 
 
-debug = True
+debug = False
 
 
 async def sendMessage(channel, msg):

@@ -69,7 +69,7 @@ class FighRenderer():
 
         for entry in items:
             image = Util.fetchIcon(entry['item'])
-            base.paste(image, entry['pos'])
+            base.paste(image, entry['pos'], image)
 
         base.save(basePicPath, quality=95)
 
