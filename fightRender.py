@@ -1,42 +1,80 @@
-from pictureApi import LoadoutGenerator
+from pictureApi import Loadout
 from util import *
 from PIL import Image
 from PIL import ImageFont
-from PIL import ImageDraw 
+from PIL import ImageDraw
+import shutil
+
 
 class FighRenderer():
-    
+
     def __init__(self, killer, victim):
         self.__killer = killer
         self.__victim = victim
         pass
 
-    def addText(self, x, y, text, pic):
+    def addText(self, pos, text, pic):
         img = Image.open(pic)
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype("", 50)
+        font = ImageFont.truetype("AGENCYB.TTF", size=52)
         # draw.text((x, y),"Sample Text",(r,g,b))
-        draw.text((x, y),text,(255,255,255), font=font)
+        draw.text(pos, text, (255, 255, 255), font=font)
         img.save(pic)
 
     def generate(self):
-        killerLoadout = LoadoutGenerator(self.__killer)
-        victimLoadout = LoadoutGenerator(self.__victim)
-        killerPath = killerLoadout.generate()
-        victimPath = victimLoadout.generate()
+        killerLoadout = Loadout(self.__killer)
+        victimLoadout = Loadout(self.__victim)
 
-        spacerBetweenLoadouts = 50
-        totalHeight = killerLoadout.height() 
-        totalWidth = killerLoadout.width() + victimLoadout.width() + spacerBetweenLoadouts
-
-        basePicPath = Util.generateBasePic(totalHeight, totalWidth)
+        basePicPath = Util.generateRandomPngTempPath()
+        shutil.copyfile("template.png", basePicPath)
 
         base = Image.open(basePicPath)
-        base.paste(Image.open(killerPath), (0, 0))
-        base.paste(Image.open(victimPath), (killerLoadout.width(), 0))
+
+        killerItems = [
+            {'item': killerLoadout.bag,       'pos': (100, 250)},
+            {'item': killerLoadout.head,      'pos': (350, 215)},
+            {'item': killerLoadout.cape,      'pos': (600, 250)},
+            {'item': killerLoadout.weapon,    'pos': (100, 470)},
+            {'item': killerLoadout.armour,    'pos': (350, 440)},
+            {'item': killerLoadout.offWeapon, 'pos': (600, 470)},
+            {'item': killerLoadout.potion,    'pos': (100, 700)},
+            {'item': killerLoadout.boots,     'pos': (350, 665)},
+            {'item': killerLoadout.food,      'pos': (600, 700)},
+            {'item': killerLoadout.mount,     'pos': (350, 895)}
+        ]
+        killerText = [
+            {'text': self.__killer['Name'],             'pos': (280, 80)},
+            {'text': self.__killer['AverageItemPower'], 'pos': (280, 130)}
+        ]
+
+        victimItems = [
+            {'item': killerLoadout.bag,       'pos': (0, 0)},
+            {'item': killerLoadout.head,      'pos': (0, 0)},
+            {'item': killerLoadout.cape,      'pos': (0, 0)},
+            {'item': killerLoadout.weapon,    'pos': (0, 0)},
+            {'item': killerLoadout.armour,    'pos': (0, 0)},
+            {'item': killerLoadout.offWeapon, 'pos': (0, 0)},
+            {'item': killerLoadout.potion,    'pos': (0, 0)},
+            {'item': killerLoadout.boots,     'pos': (0, 0)},
+            {'item': killerLoadout.food,      'pos': (0, 0)},
+            {'item': killerLoadout.mount,     'pos': (0, 0)}
+        ]
+        victimText = [
+            {'text': self.__killer['Name'],             'pos': (0, 0)},
+            {'text': self.__killer['AverageItemPower'], 'pos': (0, 0)}
+        ]
+
+        items = killerItems + victimItems
+        texts = killerText + victimText
+
+        for entry in items:
+            image = Util.fetchIcon(entry['item'])
+            base.paste(image, entry['pos'])
+
         base.save(basePicPath, quality=95)
 
+        for textObj in texts:
+            text = str(textObj['text'])
+            self.addText(textObj['pos'], text, basePicPath)
 
-        self.addText(0, 0, self.__killer["Name"], basePicPath)
-        self.addText(victimLoadout.width() + spacerBetweenLoadouts, 0, self.__victim["Name"], basePicPath)
         return basePicPath

@@ -1,11 +1,9 @@
 import discord
 import asyncio
-
-from grpc import Channel
 from playerDeathStorage import PlayerDeathStorage
 from playerKillStorage import PlayerKillStorage
-from pictureApi import LoadoutGenerator
 from fightRender import FighRenderer
+
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -26,18 +24,26 @@ def formatTime(timestamp):
     time = timestamp[int(dateTimeSep + 1): timestamp.find('.')]
     timeParts = time.split(':')
     timeParts[0] = str(int(timeParts[0]) + 2)
-    time = ''.join(timeParts)
+    time = ':'.join(timeParts)
     return date + " " + time
 
+
+debug = True
+
+
 async def sendMessage(channel, msg):
-    debug = False
     if not debug:
         await channel.send(msg)
     else:
         print(msg)
 
+
 async def sendImage(channel, img):
-    await channel.send(file=discord.File(img))
+    if not debug:
+        await channel.send(file=discord.File(img))
+    else:
+        print(img)
+
 
 async def my_background_task():
     await client.wait_until_ready()
@@ -61,13 +67,16 @@ async def my_background_task():
                     time = death["TimeStamp"]
                     eventId = death["EventId"]
 
-                    msg = "{0} was killed by {1} at {2}!".format(victim, killer, formatTime(time))
+                    msg = "{0} was killed by {1} at {2}!".format(
+                        victim, killer, formatTime(time))
                     await sendMessage(channel, msg)
 
-                    fightRender = FighRenderer(death["Killer"],death["Victim"])
+                    fightRender = FighRenderer(
+                        death["Killer"], death["Victim"])
                     await sendImage(channel, fightRender.generate())
 
-                    msg = "For more details about the death visit\n{0}".format("https://albiononline.com/en/killboard/kill/{0}".format(str(eventId)))
+                    msg = "For more details about the death visit\n{0}".format(
+                        "https://albiononline.com/en/killboard/kill/{0}".format(str(eventId)))
                     await sendMessage(channel, msg)
 
         ##########################
@@ -82,13 +91,16 @@ async def my_background_task():
                     time = death["TimeStamp"]
                     eventId = death["EventId"]
 
-                    msg = "{0} killed {1} at {2}!".format(killer, victim, formatTime(time))
+                    msg = "{0} killed {1} at {2}!".format(
+                        killer, victim, formatTime(time))
                     await sendMessage(channel, msg)
-                    
-                    fightRender = FighRenderer(death["Killer"],death["Victim"])
+
+                    fightRender = FighRenderer(
+                        death["Killer"], death["Victim"])
                     await sendImage(channel, fightRender.generate())
 
-                    msg = "For more details about the kill visit\n{0}".format("https://albiononline.com/en/killboard/kill/{0}".format(str(eventId)))
+                    msg = "For more details about the kill visit\n{0}".format(
+                        "https://albiononline.com/en/killboard/kill/{0}".format(str(eventId)))
                     await sendMessage(channel, msg)
 
         ##########################
@@ -96,4 +108,4 @@ async def my_background_task():
 
 client.loop.create_task(my_background_task())
 ###
-client.run('token here')
+client.run('token')
