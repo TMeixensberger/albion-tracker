@@ -1,9 +1,11 @@
 import discord
 import asyncio
+
+from grpc import Channel
 from playerDeathStorage import PlayerDeathStorage
 from playerKillStorage import PlayerKillStorage
 from pictureApi import LoadoutGenerator
-
+from fightRender import FighRenderer
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -27,6 +29,15 @@ def formatTime(timestamp):
     time = ''.join(timeParts)
     return date + " " + time
 
+async def sendMessage(channel, msg):
+    debug = False
+    if not debug:
+        await channel.send(msg)
+    else:
+        print(msg)
+
+async def sendImage(channel, img):
+    await channel.send(file=discord.File(img))
 
 async def my_background_task():
     await client.wait_until_ready()
@@ -43,29 +54,21 @@ async def my_background_task():
             deathStorage.refresh()
             if deathStorage.unpostedDeathsAvailable():
                 deathData = deathStorage.getUnpostedDeaths()
-                death = deathData[deathId]["data"]
-                victim = death["Victim"]["Name"]
-                killer = death["Killer"]["Name"]
-                time = death["TimeStamp"]
-                eventId = death["EventId"]
+                for deathId in deathData:
+                    death = deathData[deathId]["data"]
+                    victim = death["Victim"]["Name"]
+                    killer = death["Killer"]["Name"]
+                    time = death["TimeStamp"]
+                    eventId = death["EventId"]
 
-                msg = "{0} was killed by {1} at {2}!".format(victim, killer, formatTime(time))
-                await channel.send(msg)
+                    msg = "{0} was killed by {1} at {2}!".format(victim, killer, formatTime(time))
+                    await sendMessage(channel, msg)
 
-                msg = "Victims gear:"
-                await channel.send(msg)
-                victimLoadout = LoadoutGenerator(death["Victim"])
-                pathVictimLoadout = victimLoadout.generate()
-                await channel.send(file=discord.File(pathVictimLoadout))
+                    fightRender = FighRenderer(death["Killer"],death["Victim"])
+                    await sendImage(channel, fightRender.generate())
 
-                msg = "Killers gear:"
-                await channel.send(msg)
-                killerLoadout = LoadoutGenerator(death["Killer"])
-                pathKillerLoadout = killerLoadout.generate()
-                await channel.send(file=discord.File(pathKillerLoadout))
-
-                msg = "For more details about the death visit\n{0}".format("https://albiononline.com/en/killboard/kill/{0}".format(str(eventId)))
-                await channel.send(msg)
+                    msg = "For more details about the death visit\n{0}".format("https://albiononline.com/en/killboard/kill/{0}".format(str(eventId)))
+                    await sendMessage(channel, msg)
 
         ##########################
         for killStorage in killStorages:
@@ -80,22 +83,13 @@ async def my_background_task():
                     eventId = death["EventId"]
 
                     msg = "{0} killed {1} at {2}!".format(killer, victim, formatTime(time))
-                    await channel.send(msg)
+                    await sendMessage(channel, msg)
                     
-                    msg = "Killers gear:"
-                    await channel.send(msg)
-                    killerLoadout = LoadoutGenerator(death["Killer"])
-                    pathKillerLoadout = killerLoadout.generate()
-                    await channel.send(file=discord.File(pathKillerLoadout))
-
-                    msg = "Victims gear:"
-                    await channel.send(msg)
-                    victimLoadout = LoadoutGenerator(death["Victim"])
-                    pathVictimLoadout = victimLoadout.generate()
-                    await channel.send(file=discord.File(pathVictimLoadout))
+                    fightRender = FighRenderer(death["Killer"],death["Victim"])
+                    await sendImage(channel, fightRender.generate())
 
                     msg = "For more details about the kill visit\n{0}".format("https://albiononline.com/en/killboard/kill/{0}".format(str(eventId)))
-                    await channel.send(msg)
+                    await sendMessage(channel, msg)
 
         ##########################
         await asyncio.sleep(20)  # task runs every 60 seconds

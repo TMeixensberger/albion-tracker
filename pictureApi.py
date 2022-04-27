@@ -1,11 +1,9 @@
 import os
-import hashlib
 from random import random
 from PIL import Image, ImageDraw, ImageFilter
 from matplotlib import pyplot as plt
 import numpy as np
-import random
-import tempfile
+from util import *
 import requests
 
 
@@ -36,31 +34,8 @@ class LoadoutGenerator():
             if os.path.exists(path):
                 os.remove(path)
 
-    def generateRandomPngTempPath(self):
-        seed = random.randint(0, 187187)
-        hash_object = hashlib.md5(str(seed).encode('utf-8'))
-        name = hash_object.hexdigest()
-        fileName = "{0}/{1}.png".format(tempfile.gettempdir(), str(name))
-        self.__picPaths.append(fileName)
-        return fileName
-
-    def generateBasePic(self):
-        fileName = self.generateRandomPngTempPath()
-        canvas = 1 * np.ones((image_height, image_width, 3), np.uint8)
-        plt.imshow(canvas, interpolation='nearest')
-        plt.imsave(fileName, canvas)
-        img = Image.open(fileName)
-        rgba = img.convert("RGBA")
-        datas = rgba.getdata()
-        newData = []
-        for item in datas:
-            newData.append((255, 255, 255, 0))
-        rgba.putdata(newData)
-        rgba.save(fileName, "PNG")
-        return fileName
-
     def generateEmptyItem(self):
-        fileName = self.generateRandomPngTempPath()
+        fileName = Util.generateRandomPngTempPath()
         canvas = 1 * np.ones((imageSize, imageSize, 3), np.uint8)
         plt.imshow(canvas, interpolation='nearest')
         plt.imsave(fileName, canvas)
@@ -75,7 +50,7 @@ class LoadoutGenerator():
         return fileName
 
     def fetchIcon(self, id) -> Image:
-        imagePath = self.generateRandomPngTempPath()
+        imagePath = Util.generateRandomPngTempPath()
         if id is not None:
             endpoint = "https://render.albiononline.com/v1/item/{0}.png".format(
                 str(id["Type"]))
@@ -89,8 +64,14 @@ class LoadoutGenerator():
         img = Image.open(imagePath)
         return img
 
+    def height(self):
+        return image_height
+    
+    def width(self):
+        return image_width
+
     def generate(self):
-        basePath = self.generateBasePic()
+        basePath = Util.generateBasePic(image_height, image_width)
         base = Image.open(basePath)
         base.paste(self.fetchIcon(self.__bag), (spacer, spacer))
         base.paste(self.fetchIcon(self.__head),
